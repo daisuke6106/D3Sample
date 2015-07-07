@@ -69,6 +69,13 @@
 					"x2":function(d){ return d.target.coordinate_x },
 					"y2":function(d){ return d.target.coordinate_y },
 				});
+			
+			nodes.forEach(function(element, index, array){
+				element.px=element.coordinate_x;
+				element.x =element.coordinate_x;
+				element.py=element.coordinate_y;
+				element.y =element.coordinate_y;
+			});
 			 
 			var node = svg.selectAll("circle")
 				.data(nodes)
@@ -84,7 +91,7 @@
 				.call(force.drag);
 			
 			d3.selectAll(".node").each(function(d){ d.fixed = true })
-			 
+			
 			//update
 			force.on("tick", function() {
 				line
