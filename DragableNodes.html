@@ -8,15 +8,15 @@
 		<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
 		<style>
-			html, body, svg {
-				width: 100%;
-				height: 100%;
+			#display {
+				width : 1000px;
+				height : 1000px;
 			}
 		</style>
 		<div id="display"/>
 		<script>
-			// 
-			/* ==================================================
+			// ####################################################################################################
+			/* 
 			 * ノードの表すクラスです
 			 */
 			var Node = function(data){
@@ -30,21 +30,193 @@
 			Node.prototype.getData = function() {
 				return this.data;
 			}
-			/* ==================================================
+			// ####################################################################################################
+			
+			// ####################################################################################################
+			/* ====================================================================================================
+			 * [type]:コンストラクタ
+			 *        引数に設定されたdiv要素のidに対して、ネットワーク図を生成する。
+			 * [param]:id = div要素のid
+			 *         x  = SVGのサイズ（横）
+			 *         y  = SVGのサイズ（縦）
+			 */
+			var NetWorkDiagram = function(id, x, y) {
+				this.id         = id;
+				this.svg_width  = x;
+				this.svg_height = y;
+				this.svg = d3.select("#" + id).append("svg").attr({
+					width: x,
+					height: y
+				})
+				this.force = d3.layout.force()
+				    .size([x, y])
+					.gravity(0.01)
+					.charge([-1000])
+					// .friction(0.95)
+					.linkDistance([100]);
+					// .linkStrength(1);
+			}
+			
+			/* ====================================================================================================
 			 * 
 			 */
-			var NetWorkDiagram = function(id) {
-				this.id=id;
-				this.force = d3.layout.force()
-				    .size([w, h])
-				    .linkDistance(200)
-				    .gravity(1)
-				    .start();
+			NetWorkDiagram.prototype.setLines = function(links) {
+				this.links = links;
+				this.force.links(this.links);
 			}
-			// ==================================================
+			
+			/* ====================================================================================================
+			 * 
+			 */
+			NetWorkDiagram.prototype.setNodes = function(nodes) {
+				this.nodes = nodes;
+				this.force.nodes(this.nodes);
+			}
+			
+			/* ====================================================================================================
+			 * ズーム処理イベントを登録する
+			 */
+			NetWorkDiagram.prototype.zoom = function() {
+				this.svg = this.svg.append("g")
+					.call(d3.behavior.zoom().scaleExtent([1, 8])
+						.on("zoom",	function () {
+	 						d3.select(this).attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+						})
+					)
+					.append("g");
+				this.svg.append("rect")
+					.attr("fill"            , "none")
+					.attr("pointer-events"  , "all")
+					.attr("class"           , "overlay")
+					.attr("width"           , this.svg_width)
+					.attr("height"          , this.svg_height);
+			}
+			
+			/* ====================================================================================================
+			 * 画面上への描写を開始する
+			 */
+			NetWorkDiagram.prototype.start = function() {
+				// ノード、線の描写位置の計算を実施する。
+				this.force.start();
+				
+				// 線を描写する
+				var tmplinesObj = this.linesObj = this.svg.selectAll('line')
+					.data(this.links)
+					.enter()
+					.append('line')
+					.attr({
+						'stroke': 'black',
+						'x1': function(d, i) { 
+							return d.source.x; 
+						},
+						'y1': function(d, i) { 
+							return d.source.y; 
+						},
+						'x2': function(d, i) { 
+							return d.target.x; 
+						},
+						'y2': function(d, i) { 
+							return d.target.y; 
+						}
+					})
+					.style({
+					});
+				
+				// ノードを描写する
+				var tmpGroup = this.nodesGroup = this.svg.selectAll('g').data(this.nodes).enter().append('g')
+				.attr({
+					transform: function(d) {
+						return "translate(" + d.x + "," + d.y + ")";
+					}
+				})
+				// .on("mouseover", this._node_mouseover)
+				// .on("mouseout", this._node_mouseout)
+				.call(this.force.drag);
+				
+				// ノードを円として描写する
+				this.nodesGroup.append('circle')
+					.attr({
+						'class':"node",
+						'r': 50,
+						'fill': 'gray'
+					})
+					.style({
+					});
+				// ノードにテキストを描写する
+				this.nodesGroup.append('text')
+					.attr({
+						'x': 12
+						
+					})
+					.text(function(d) { 
+						return d.name; 
+					});
+				
+				// ドラックドロップにて移動した際の各ノード、線の再描写処理を定義
+				this.force.on('tick', function() {
+					tmplinesObj
+						.attr('x1', function(d) { 
+							return d.source.x; 
+						})
+						.attr('y1', function(d) { 
+							return d.source.y; 
+						})
+						.attr('x2', function(d) { 
+							return d.target.x; 
+						})
+						.attr('y2', function(d) { 
+							return d.target.y; 
+						});
+					tmpGroup
+						.attr({
+							transform: function(d) {
+								return "translate(" + d.x + "," + d.y + ")";
+							}
+						});
+				});
+			}
+			
+			/* ====================================================================================================
+			 * ノードへのマウスオーバー時のイベント
+			 */
+			NetWorkDiagram.prototype._node_mouseover = function () {
+				d3.select(this).select("circle").transition()
+				.duration(100)
+				.attr("r", function(d) {
+					return 16;
+				});
+			}
+			
+			/* ====================================================================================================
+			 * ノードへのマウスアウト時のイベント
+			 */
+			NetWorkDiagram.prototype._node_mouseout = function () {
+				d3.select(this).select("circle").transition()
+				.duration(100)
+				.attr("r", function(d) {
+					return 8;
+				});
+			}
+			
+			// ####################################################################################################
 		</script>
 		<script>
-			
+			var data = {
+	            nodes: [
+	                { name: 'aki' },
+	                { name: 'mii' },
+	                { name: 'akiton' }
+	            ],
+	            links: [
+	                { source: 0, target: 2 },
+	                { source: 1, target: 2 }
+	            ]
+        	};
+        	var diagram = new NetWorkDiagram("display", 1000, 1000);
+        	diagram.zoom();
+        	diagram.setLines(data.links);
+        	diagram.setNodes(data.nodes);
+        	diagram.start();
 		</script>
 	</body>
 </html>
