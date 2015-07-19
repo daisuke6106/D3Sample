@@ -183,6 +183,13 @@
 				// ノードを描写する
 				var tmpGroup = this.nodesGroup = this.svg.selectAll('g').data(this.nodes).enter().append('g')
 				.attr({
+					class    : function(d) {
+						if (d.type) {
+							return d.type;
+						} else { 
+							return "";
+						} 
+					},
 					transform: function(d) {
 						if (d.fix_coordinate) {
 							d.fixed = true;           // 座標固定のノードである場合、ドラッグ時に移動しないよう制御する。
@@ -201,11 +208,8 @@
 				.call(this.force.drag);
 				
 				// ノードを円として描写する
-				this.nodesGroup.append(function(d){
-					return 'circle';
-				})
-				// this.nodesGroup.append('circle')
-					.attr({
+				this.svg.selectAll("g.CIRCLE").append("circle")
+				.attr({
 						'class':function(d){
 							if (d.class) {
 								return d.class;
@@ -216,6 +220,41 @@
 						'r': function(d){
 							if (d.r) {
 								return d.r;
+							} else {
+								return 30;
+							}
+						},
+						'fill': function(d){
+							if (d.fill) {
+								return d.fill;
+							} else {
+								return "gray";
+							}
+						}
+					})
+					.style({
+					});
+				
+				// ノードを正方形として描写する
+				this.svg.selectAll("g.SQUARE").append("rect")
+				.attr({
+						'class':function(d){
+							if (d.class) {
+								return d.class;
+							} else {
+								return "";
+							}
+						},
+						'width': function(d){
+							if (d.width) {
+								return d.width;
+							} else {
+								return 30;
+							}
+						},
+						'height': function(d){
+							if (d.height) {
+								return d.height;
 							} else {
 								return 30;
 							}
@@ -292,13 +331,18 @@
 			// 画面表示用データを生成する。
 			var data = {
 	            nodes: [
-	                { name: 'aki'   , type: "CIRCLE", fill:"#FF0000", r:50 , fix_coordinate:true , coordinate_x:100, coordinate_y:100},
-	                { name: 'mii'   , type: "CIRCLE", fill:"#00FF00", r:75 , fix_coordinate:true , coordinate_x:100, coordinate_y:200},
-	                { name: 'akiton', type: "SQUARE", fill:"#0000FF", r:100, fix_coordinate:false, coordinate_x:200, coordinate_y:200}
+	                { name: 'aki'   , type: "CIRCLE", fill:"#FF0000", r:50  , fix_coordinate:true , coordinate_x:100, coordinate_y:100},
+	                { name: 'mii'   , type: "CIRCLE", fill:"#00FF00", r:75  , fix_coordinate:true , coordinate_x:100, coordinate_y:200},
+	                { name: 'akiton', type: "CIRCLE", fill:"#0000FF", r:100 , width:100, height:100, fix_coordinate:false, coordinate_x:200, coordinate_y:200},
+	                { name: 'mii'   , type: "CIRCLE", fill:"#00FF00", r:75  , fix_coordinate:true , coordinate_x:100, coordinate_y:200},
+	                { name: 'mii'   , type: "CIRCLE", fill:"#00FF00", r:75  , fix_coordinate:true , coordinate_x:100, coordinate_y:200},
+	                { name: 'mii'   , type: "CIRCLE", fill:"#00FF00", r:75  , fix_coordinate:true , coordinate_x:100, coordinate_y:200},
+	                { name: 'mii'   , type: "CIRCLE", fill:"#00FF00", r:75  , fix_coordinate:true , coordinate_x:100, coordinate_y:200}
 	            ],
 	            links: [
 	                { source: 0, target: 2 },
-	                { source: 1, target: 2 }
+	                { source: 1, target: 2 },
+	                { source: 0, target: 1 }
 	            ]
         	};
         	// ネットワーク図一覧に表示するノード、リンクを生成する。
