@@ -17,6 +17,28 @@
 		<div id="display"/>
 		<script>
 			// ####################################################################################################
+			var NetworkData = function(data) {
+				/** ノードデータ */
+				this.data = data;
+			}
+			/**
+			 * データを取得する
+			 * @return データ
+			 */
+			NetworkData.prototype.getNodes = function() {
+				console.log("getgetNode is not Override");
+				alert("getgetNode is not Override");
+			}
+			/** 
+			 * リンクを取得する
+			 * @return リンクデータ
+			 */
+			NetworkData.prototype.getLinks = function() {
+				console.log("getLinks is not Override");
+				alert("getLinks is not Override");
+			}
+			
+			// ####################################################################################################
 			/* 
 			 * ノードの表すクラスです
 			 */
@@ -30,6 +52,9 @@
 			 */
 			Node.prototype.getData = function() {
 				return this.data;
+			}
+			Node.prototype.getColor = function() {
+				
 			}
 			// ####################################################################################################
 			
@@ -84,17 +109,11 @@
 			/* ====================================================================================================
 			 * 
 			 */
-			NetWorkDiagram.prototype.setLines = function(links) {
-				this.links = links;
-				this.force.links(this.links);
-			}
-			
-			/* ====================================================================================================
-			 * 
-			 */
-			NetWorkDiagram.prototype.setNodes = function(nodes) {
-				this.nodes = nodes;
+			NetWorkDiagram.prototype.setData = function(networkData) {
+				this.nodes = networkData.getNodes();
 				this.force.nodes(this.nodes);
+				this.links = networkData.getLinks();
+				this.force.links(this.links);
 			}
 			
 			/* ====================================================================================================
@@ -225,22 +244,28 @@
 			// ####################################################################################################
 		</script>
 		<script>
+			// 画面表示用データを生成する。
 			var data = {
 	            nodes: [
-	                { name: 'aki' },
-	                { name: 'mii' },
-	                { name: 'akiton' }
+	                { name: 'aki'   , type: "CIRCLE", color="#FF0000", r=50 , x=100, y=100},
+	                { name: 'mii'   , type: "CIRCLE", color="#00FF00", r=75 , x=100, y=200},
+	                { name: 'akiton', type: "SQUARE", color="#0000FF", r=100, x=200, y=200}
 	            ],
 	            links: [
 	                { source: 0, target: 2 },
 	                { source: 1, target: 2 }
 	            ]
         	};
+        	// ネットワーク図一覧に表示するノード、リンクを生成する。
+        	var networkNode = new NetworkData(data);
+        	networkNode.getNodes = function() {return this.data.nodes;}
+        	networkNode.getLinks = function() {return this.data.links;}
+        	
+        	// ネットワーク図を生成する。
         	var diagram = new NetWorkDiagram("display", 1000, 1000);
-        	// diagram.zoom();
-        	diagram.setLines(data.links);
-        	diagram.setNodes(data.nodes);
-        	diagram.start();
+        	// diagram.zoom();            // ズーム機能を有効化する
+        	diagram.setData(networkNode); // データを設定する
+        	diagram.start();              // 描写を開始する。
 		</script>
 	</body>
 </html>
