@@ -53,9 +53,6 @@
 			Node.prototype.getData = function() {
 				return this.data;
 			}
-			Node.prototype.getColor = function() {
-				
-			}
 			// ####################################################################################################
 			
 			// ####################################################################################################
@@ -141,6 +138,8 @@
 			NetWorkDiagram.prototype.start = function() {
 				// ノード、線の描写位置の計算を実施する。
 				this.force.start();
+				// ノードの初期描写位置計算処理を進めて移動後の状態とする。
+				for (var i = 10000; i > 0; --i) this.force.tick();
 				
 				// 線を描写する
 				var tmplinesObj = this.linesObj = this.svg.selectAll('line')
@@ -150,16 +149,32 @@
 					.attr({
 						'stroke': 'black',
 						'x1': function(d, i) { 
-							return d.source.x; 
+							if (d.source.fix_coordinate) {
+								return d.source.coordinate_x;
+							} else {
+								return d.source.x;
+							}
 						},
 						'y1': function(d, i) { 
-							return d.source.y; 
+							if (d.source.fix_coordinate) {
+								return d.source.coordinate_y;
+							} else {
+								return d.source.y;
+							}
 						},
 						'x2': function(d, i) { 
-							return d.target.x; 
+							if (d.target.fix_coordinate) {
+								return d.target.coordinate_x;
+							} else { 
+								return d.target.x;
+							}
 						},
 						'y2': function(d, i) { 
-							return d.target.y; 
+							if (d.target.fix_coordinate) {
+								return d.target.coordinate_y;
+							} else {
+								return d.target.y;
+							}
 						}
 					})
 					.style({
@@ -169,7 +184,16 @@
 				var tmpGroup = this.nodesGroup = this.svg.selectAll('g').data(this.nodes).enter().append('g')
 				.attr({
 					transform: function(d) {
-						return "translate(" + d.x + "," + d.y + ")";
+						if (d.fix_coordinate) {
+							d.fixed = true;           // 座標固定のノードである場合、ドラッグ時に移動しないよう制御する。
+							d.x     = d.coordinate_x;
+							d.y     = d.coordinate_y;
+							d.px    = d.coordinate_x;
+							d.py    = d.coordinate_y;
+							return "translate(" + d.coordinate_x + "," + d.coordinate_y + ")";
+						} else {
+							return "translate(" + d.x + "," + d.y + ")";
+						}
 					}
 				})
 				// .on("mouseover", this._node_mouseover)
@@ -177,11 +201,32 @@
 				.call(this.force.drag);
 				
 				// ノードを円として描写する
-				this.nodesGroup.append('circle')
+				this.nodesGroup.append(function(d){
+					return 'circle';
+				})
+				// this.nodesGroup.append('circle')
 					.attr({
-						'class':"node",
-						'r': 50,
-						'fill': 'gray'
+						'class':function(d){
+							if (d.class) {
+								return d.class;
+							} else {
+								return "";
+							}
+						},
+						'r': function(d){
+							if (d.r) {
+								return d.r;
+							} else {
+								return 30;
+							}
+						},
+						'fill': function(d){
+							if (d.fill) {
+								return d.fill;
+							} else {
+								return "gray";
+							}
+						}
 					})
 					.style({
 					});
@@ -247,9 +292,9 @@
 			// 画面表示用データを生成する。
 			var data = {
 	            nodes: [
-	                { name: 'aki'   , type: "CIRCLE", color="#FF0000", r=50 , x=100, y=100},
-	                { name: 'mii'   , type: "CIRCLE", color="#00FF00", r=75 , x=100, y=200},
-	                { name: 'akiton', type: "SQUARE", color="#0000FF", r=100, x=200, y=200}
+	                { name: 'aki'   , type: "CIRCLE", fill:"#FF0000", r:50 , fix_coordinate:true , coordinate_x:100, coordinate_y:100},
+	                { name: 'mii'   , type: "CIRCLE", fill:"#00FF00", r:75 , fix_coordinate:true , coordinate_x:100, coordinate_y:200},
+	                { name: 'akiton', type: "SQUARE", fill:"#0000FF", r:100, fix_coordinate:false, coordinate_x:200, coordinate_y:200}
 	            ],
 	            links: [
 	                { source: 0, target: 2 },
