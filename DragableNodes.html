@@ -203,9 +203,11 @@
 						}
 					}
 				})
-				// .on("mouseover", this._node_mouseover)
-				// .on("mouseout", this._node_mouseout)
+				.on("mouseover", this._node_mouseover)
+				.on("mouseout", this._node_mouseout)
+				.on("click", this._node_click)
 				.call(this.force.drag);
+				
 				
 				// ノードを円として描写する
 				this.svg.selectAll("g.CIRCLE").append("circle")
@@ -227,6 +229,20 @@
 						'fill': function(d){
 							if (d.fill) {
 								return d.fill;
+							} else {
+								return "gray";
+							}
+						},
+						'stroke-width' : function(d){
+							if (d.stroke_width) {
+								return d.stroke_width;
+							} else {
+								return 3;
+							}
+						},
+						'stroke' : function(d){
+							if (d.stroke) {
+								return d.stroke;
 							} else {
 								return "gray";
 							}
@@ -304,25 +320,36 @@
 			}
 			
 			/* ====================================================================================================
+			 * ノードへのクリック時のイベント
+			 */
+			NetWorkDiagram.prototype._node_click = function(d, i) { 
+				var move_x = d.x;
+				var move_y = d.y;
+				console.log(move_x + ":" + move_y );
+			}
+			
+			/* ====================================================================================================
 			 * ノードへのマウスオーバー時のイベント
 			 */
-			NetWorkDiagram.prototype._node_mouseover = function () {
-				d3.select(this).select("circle").transition()
-				.duration(100)
-				.attr("r", function(d) {
-					return 16;
-				});
+			NetWorkDiagram.prototype._node_mouseover = function (d, i) {
+				// サンプル：マウスオーバされたノードを大きくする
+				// d3.select(this).select("circle").transition()
+				// .duration(100)
+				// .attr("r", function(d) {
+				// 	return 16;
+				// });
 			}
 			
 			/* ====================================================================================================
 			 * ノードへのマウスアウト時のイベント
 			 */
-			NetWorkDiagram.prototype._node_mouseout = function () {
-				d3.select(this).select("circle").transition()
-				.duration(100)
-				.attr("r", function(d) {
-					return 8;
-				});
+			NetWorkDiagram.prototype._node_mouseout = function (d, i) {
+				// サンプル：マウスアウトされたノードを小さくする
+				// d3.select(this).select("circle").transition()
+				// .duration(100)
+				// .attr("r", function(d) {
+				// 	return 8;
+				// });
 			}
 			
 			// ####################################################################################################
@@ -349,7 +376,9 @@
         	var networkNode = new NetworkData(data);
         	networkNode.getNodes = function() {return this.data.nodes;}
         	networkNode.getLinks = function() {return this.data.links;}
-        	
+        	networkNode._node_click = function() {
+        		
+        	}
         	// ネットワーク図を生成する。
         	var diagram = new NetWorkDiagram("display", 1000, 1000);
         	// diagram.zoom();            // ズーム機能を有効化する
