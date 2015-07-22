@@ -150,30 +150,58 @@
 						'stroke': 'black',
 						'x1': function(d, i) { 
 							if (d.source.fix_coordinate) {
-								return d.source.coordinate_x;
+								// if (d.source.type === "CIRCLE") {
+									return d.source.coordinate_x;
+								// } else {
+								// 	return d.source.coordinate_x + d.source.width / 2;
+								// }
 							} else {
 								return d.source.x;
 							}
 						},
 						'y1': function(d, i) { 
 							if (d.source.fix_coordinate) {
-								return d.source.coordinate_y;
+								// if (d.source.type === "CIRCLE") {
+									return d.source.coordinate_y;
+								// } else {
+								// 	return d.source.coordinate_y + d.source.height / 2;
+								// }
 							} else {
-								return d.source.y;
+								// if (d.source.type === "CIRCLE") {
+									return d.source.y;
+								// } else {
+								// 	return d.source.y + d.source.height / 2;
+								// }
 							}
 						},
-						'x2': function(d, i) { 
+						'x2': function(d, i) {
 							if (d.target.fix_coordinate) {
-								return d.target.coordinate_x;
+								// if (d.target.type === "CIRCLE") {
+									return d.target.coordinate_x;
+								// } else {
+								// 	return d.target.coordinate_x + d.target.width / 2;
+								// }
 							} else { 
-								return d.target.x;
+								// if (d.target.type === "CIRCLE") {
+									return d.target.x;
+								// } else {
+								// 	return d.target.x + d.target.width / 2;
+								// }
 							}
 						},
 						'y2': function(d, i) { 
 							if (d.target.fix_coordinate) {
-								return d.target.coordinate_y;
+								// if (d.target.type === "CIRCLE") {
+									return d.target.coordinate_y;
+								// } else {
+								// 	return d.target.coordinate_y + d.target.height / 2;
+								// }
 							} else {
-								return d.target.y;
+								// if (d.target.type === "CIRCLE") {
+									return d.target.y;
+								// } else {
+								// 	return d.target.y + d.target.height / 2;
+								// }
 							}
 						}
 					})
@@ -197,9 +225,17 @@
 							d.y     = d.coordinate_y;
 							d.px    = d.coordinate_x;
 							d.py    = d.coordinate_y;
-							return "translate(" + d.coordinate_x + "," + d.coordinate_y + ")";
+							if (d.type === "CIRCLE") {
+								return "translate(" + d.coordinate_x + "," + d.coordinate_y + ")";
+							} else {
+								return "translate(" + ( d.coordinate_x - ( d.width / 2 ) ) + "," + ( d.coordinate_y - ( d.height / 2 ) ) + ")";
+							}
 						} else {
-							return "translate(" + d.x + "," + d.y + ")";
+							if (d.type === "CIRCLE") {
+								return "translate(" + d.x + "," + d.y + ")";
+							} else {
+								return "translate(" + ( d.x - ( d.width / 2 ) ) + "," + ( d.y - ( d.height / 2 ) ) + ")";
+							}
 						}
 					}
 				})
@@ -313,7 +349,11 @@
 					tmpGroup
 						.attr({
 							transform: function(d) {
-								return "translate(" + d.x + "," + d.y + ")";
+								if (d.type === "CIRCLE") {
+									return "translate(" + d.x + "," + d.y + ")";
+								} else {
+									return "translate(" + ( d.x - ( d.width / 2 ) ) + "," + ( d.y - ( d.height / 2 ) ) + ")";
+								}
 							}
 						});
 				});
@@ -360,7 +400,7 @@
 	            nodes: [
 	                { name: 'aki'   , type: "CIRCLE", fill:"#FF0000", r:50  , fix_coordinate:true , coordinate_x:100, coordinate_y:100},
 	                { name: 'mii'   , type: "CIRCLE", fill:"#00FF00", r:75  , fix_coordinate:true , coordinate_x:100, coordinate_y:200},
-	                { name: 'akiton', type: "CIRCLE", fill:"#0000FF", r:100 , width:100, height:100, fix_coordinate:false, coordinate_x:200, coordinate_y:200},
+	                { name: 'akiton', type: "SQUARE", fill:"#0000FF", r:100 , width:100, height:100, fix_coordinate:false, coordinate_x:0, coordinate_y:0},
 	                { name: 'mii'   , type: "CIRCLE", fill:"#00FF00", r:75  , fix_coordinate:true , coordinate_x:100, coordinate_y:200},
 	                { name: 'mii'   , type: "CIRCLE", fill:"#00FF00", r:75  , fix_coordinate:true , coordinate_x:100, coordinate_y:200},
 	                { name: 'mii'   , type: "CIRCLE", fill:"#00FF00", r:75  , fix_coordinate:true , coordinate_x:100, coordinate_y:200},
