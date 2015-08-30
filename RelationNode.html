@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>DragableNodes</title>
+	</head>
+	<body>
+		<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
+		<style>
+			#display {
+				width : 1000px;
+				height : 1000px;
+				border: 1px solid #000000;  
+			}
+		</style>
+		<div id="display"/>
+		<script>
+			
+			// ####################################################################################################
+			/* ====================================================================================================
+			 * [type]:コンストラクタ
+			 *        引数に設定されたdiv要素のidに対して、ネットワーク図を生成する。
+			 * [param]:id = div要素のid
+			 *         x  = SVGのサイズ（横）
+			 *         y  = SVGのサイズ（縦）
+			 */
+			var NetWorkDiagram = function(id, x, y) {
+				this.id         = id;
+				this.svg_width  = x;
+				this.svg_height = y;
+				this.svg = d3.select("#" + id).append("svg").attr({
+					width: x,
+					height: y
+				})
+			}
+			
+			/* ====================================================================================================
+			 * 
+			 */
+			NetWorkDiagram.prototype.setData = function(networkData) {
+				this.nodes = networkData;
+			}
+			
+			/* ====================================================================================================
+			 * ズーム処理イベントを登録する
+			 */
+			NetWorkDiagram.prototype.zoom = function() {
+				this.svg = this.svg.append("g")
+					.call(d3.behavior.zoom().scaleExtent([1, 8])
+						.on("zoom",	function () {
+	 						d3.select(this).attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+						})
+					)
+					.append("g");
+				this.svg.append("rect")
+					.attr("fill"            , "none")
+					.attr("pointer-events"  , "all")
+					.attr("class"           , "overlay")
+					.attr("width"           , this.svg_width)
+					.attr("height"          , this.svg_height);
+			}
+			
+			/* ====================================================================================================
+			 * 画面上への描写を開始する
+			 */
+			NetWorkDiagram.prototype.start = function() {
+				var startX     = 10;
+				var startY     = 10;
+				var nodeWidth  = 100;
+				var nodeHeight = 30;
+				var marginPx = 10;
+				
+				var child_nodeWidth  = 100;
+				var child_nodeHeight = 30;
+				var paddingPx = 10;
+				
+				var x = startX + marginPx;
+				var y = startY + marginPx;
+				for (var i in this.nodes) {
+					var tmpGroup = this.svg.append("g");
+					
+					var child = this.nodes[i].child;
+					
+					var width  = nodeWidth * 5;
+					var height = ( ( paddingPx + nodeHeight + paddingPx ) * child.length );
+					tmpGroup.append("rect")
+						.attr("x", x)             // x座標を指定
+						.attr("y", y)             // y座標を指定
+						.attr("width" , width)    // 横幅を指定
+						.attr("height", height)   // 縦幅を指定
+						.attr("rx", 20)           // 横の角丸半径を指定
+						.attr("ry", 20)           // 縦の角丸半径を指定
+						.attr("stroke", "blue")   // 青色にする
+						.attr("fill", "cyan")     // 塗りは水色にする
+						.attr("stroke-width", 2)  // 線幅を指定
+					;
+					
+					var child_x = x + paddingPx;
+					var child_y = y + paddingPx;
+					for (var k in child) {
+					
+						var child_width  = child_nodeWidth;
+						var child_height = child_nodeHeight;
+						
+						tmpGroup.append("rect")
+						.attr("x", child_x)             // x座標を指定
+						.attr("y", child_y)             // y座標を指定
+						.attr("width" , child_width)    // 横幅を指定
+						.attr("height", child_height)   // 縦幅を指定
+						.attr("rx", 20)           // 横の角丸半径を指定
+						.attr("ry", 20)           // 縦の角丸半径を指定
+						.attr("stroke", "blue")   // 青色にする
+						.attr("fill", "cyan")     // 塗りは水色にする
+						.attr("stroke-width", 2)  // 線幅を指定
+						;
+						
+						child_y = child_y + paddingPx + child_nodeHeight + paddingPx;
+					}
+					y = ( y + marginPx ) + height;
+				}
+			}
+			
+			// /* ====================================================================================================
+			//  * ノードへのクリック時のイベント
+			//  */
+			// NetWorkDiagram.prototype._node_click = function(d, i) { 
+			// 	var move_x = d.x;
+			// 	var move_y = d.y;
+			// 	console.log(move_x + ":" + move_y );
+			// }
+			// 
+			// /* ====================================================================================================
+			//  * ノードへのマウスオーバー時のイベント
+			//  */
+			// NetWorkDiagram.prototype._node_mouseover = function (d, i) {
+			// 	// サンプル：マウスオーバされたノードを大きくする
+			// 	// d3.select(this).select("circle").transition()
+			// 	// .duration(100)
+			// 	// .attr("r", function(d) {
+			// 	// 	return 16;
+			// 	// });
+			// }
+			// 
+			// /* ====================================================================================================
+			//  * ノードへのマウスアウト時のイベント
+			//  */
+			// NetWorkDiagram.prototype._node_mouseout = function (d, i) {
+			// 	// サンプル：マウスアウトされたノードを小さくする
+			// 	// d3.select(this).select("circle").transition()
+			// 	// .duration(100)
+			// 	// .attr("r", function(d) {
+			// 	// 	return 8;
+			// 	// });
+			// }
+			
+			// ####################################################################################################
+		</script>
+		<script>
+			// 画面表示用データを生成する。
+			var data = [
+                { name: 'tarou'  , fill:"#FF0000", 
+                	child:[
+                		{name:"PC"  , id:"1", connectid:""},
+                		{name:"GAME", id:"2", connectid:"1"},
+                		{name:"PEN" , id:"3", connectid:"2"},
+                	]
+                },
+                { name: 'zirou'  , fill:"#FF0000", 
+                	child:[
+                		{name:"PC"  , id:"4", connectid:"3"},
+                		{name:"GAME", id:"5", connectid:"4"},
+                		{name:"PEN" , id:"6", connectid:"5"},
+                	]
+                },
+            ];
+        	// ネットワーク図を生成する。
+        	var diagram = new NetWorkDiagram("display", 1000, 1000);
+        	// diagram.zoom();            // ズーム機能を有効化する
+        	diagram.setData(data); // データを設定する
+        	diagram.start();              // 描写を開始する。
+		</script>
+	</body>
+</html>
